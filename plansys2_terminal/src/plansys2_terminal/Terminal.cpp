@@ -27,8 +27,6 @@
 #include <map>
 #include <utility>
 
-#include "rclcpp/rclcpp.hpp"
-
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_planner/PlannerClient.hpp"
@@ -36,8 +34,7 @@
 #include "plansys2_executor/ActionExecutor.hpp"
 #include "plansys2_pddl_parser/Utils.h"
 
-#include "plansys2_msgs/msg/action_performer_status.hpp"
-#include "plansys2_msgs/msg/action_execution.hpp"
+#include "plansys2_msgs/ActionExecution.h"
 
 #include "plansys2_terminal/Terminal.hpp"
 
@@ -163,7 +160,7 @@ char ** completer(const char * text, int start, int end)
 }
 // LCOV_EXCL_STOP
 
-std::optional<plansys2_msgs::msg::Plan>
+std::optional<plansys2_msgs::Plan>
 parse_plan(const std::string planfile)
 {
   std::ifstream plan_file(planfile, std::ifstream::in);
@@ -173,11 +170,11 @@ parse_plan(const std::string planfile)
     return {};
   }
 
-  plansys2_msgs::msg::Plan ret;
+  plansys2_msgs::Plan ret;
   if (plan_file.is_open()) {
     std::string line;
     while (getline(plan_file, line)) {
-      plansys2_msgs::msg::PlanItem item;
+      plansys2_msgs::PlanItem item;
       size_t colon_pos = line.find(":");
       size_t colon_opar = line.find("(");
       size_t colon_cpar = line.find(")");
@@ -211,9 +208,9 @@ parse_plan(const std::string planfile)
 
 
 Terminal::Terminal()
-: rclcpp::Node("terminal")
+: nh_("terminal")
 {
-  this->declare_parameter<std::string>("problem_file", "");
+  //this->declare_parameter<std::string>("problem_file", "");
 }
 
 void
@@ -229,20 +226,20 @@ Terminal::init()
 
 void Terminal::add_problem()
 {
-  this->get_parameter<std::string>("problem_file", problem_file_name_);
+  nh_.getParam("problem_file", problem_file_name_);
   if (!problem_file_name_.empty()) {
-    RCLCPP_INFO(
-      this->get_logger(), "Adding problem file to problem_expert: %s",
+    ROS_INFO(
+      "Adding problem file to problem_expert: %s",
       problem_file_name_.c_str());
     std::ifstream problem_ifs(problem_file_name_);
     std::string problem_str((std::istreambuf_iterator<char>(
         problem_ifs)), std::istreambuf_iterator<char>());
 
     if (!problem_client_->addProblem(problem_str)) {
-      RCLCPP_ERROR(this->get_logger(), "Failed to add problem to problem_expert.");
+      ROS_ERROR("Failed to add problem to problem_expert.");
     }
   } else {
-    RCLCPP_INFO(this->get_logger(), "No problem file specified.");
+    ROS_INFO("No problem file specified.");
   }
 }
 
@@ -534,7 +531,7 @@ Terminal::process_set_predicate(std::vector<std::string> & command, std::ostring
 {
   if (command.size() > 0) {
     plansys2::Predicate predicate;
-    predicate.node_type = plansys2_msgs::msg::Node::PREDICATE;
+    predicate.node_type = plansys2_msgs::Node::PREDICATE;
     predicate.name = command[0];
 
     if (predicate.name.front() != '(') {
@@ -667,7 +664,7 @@ Terminal::process_remove_predicate(std::vector<std::string> & command, std::ostr
   const std::string rem_pred_cmd = "\tUsage: \n\t\tremove predicate (predicate)";
   if (command.size() > 0) {
     plansys2::Predicate predicate;
-    predicate.node_type = plansys2_msgs::msg::Node::PREDICATE;
+    predicate.node_type = plansys2_msgs::Node::PREDICATE;
     predicate.name = command[0];
 
     if (predicate.name.front() != '(') {
@@ -703,7 +700,7 @@ Terminal::process_remove_function(std::vector<std::string> & command, std::ostri
 {
   if (command.size() > 0) {
     plansys2::Function function;
-    function.node_type = plansys2_msgs::msg::Node::FUNCTION;
+    function.node_type = plansys2_msgs::Node::FUNCTION;
 
     std::regex name_regexp("[a-zA-Z][a-zA-Z0-9_\\-]*");
 
@@ -780,22 +777,22 @@ Terminal::execute_plan(int items)
 }
 
 void
-Terminal::execute_plan(const plansys2_msgs::msg::Plan & plan)
+Terminal::execute_plan(const plansys2_msgs::Plan & plan)
 {
-  rclcpp::Rate loop_rate(5);
+  ros::Rate loop_rate(5);
 
   if (!executor_client_->start_plan_execution(plan)) {
     std::cout << "Execution could not start " << std::endl;
     return;
   }
 
-  while (rclcpp::ok() && executor_client_->execute_and_check_plan()) {
+  while (ros::ok() && executor_client_->execute_and_check_plan()) {
     auto feedback = executor_client_->getFeedBack();
 
     std::cout << "\r\e[K" << std::flush;
     for (const auto & action_status : feedback.action_execution_status) {
-      if (action_status.status == plansys2_msgs::msg::ActionExecutionInfo::NOT_EXECUTED ||
-        action_status.status == plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED)
+      if (action_status.status == plansys2_msgs::ActionExecutionInfo::NOT_EXECUTED ||
+        action_status.status == plansys2_msgs::ActionExecutionInfo::SUCCEEDED)
       {
         continue;
       }
@@ -807,16 +804,16 @@ Terminal::execute_plan(const plansys2_msgs::msg::Plan & plan)
       std::cout << ") ";
 
       switch (action_status.status) {
-        case plansys2_msgs::msg::ActionExecutionInfo::NOT_EXECUTED:
+        case plansys2_msgs::ActionExecutionInfo::NOT_EXECUTED:
           std::cout << "waiting]";
           break;
-        case plansys2_msgs::msg::ActionExecutionInfo::EXECUTING:
+        case plansys2_msgs::ActionExecutionInfo::EXECUTING:
           std::cout << action_status.completion * 100.0 << "%]";
           break;
-        case plansys2_msgs::msg::ActionExecutionInfo::FAILED:
+        case plansys2_msgs::ActionExecutionInfo::FAILED:
           std::cout << "FAILED]";
           break;
-        case plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED:
+        case plansys2_msgs::ActionExecutionInfo::SUCCEEDED:
           std::cout << "succeeded]";
           break;
       }
@@ -824,7 +821,6 @@ Terminal::execute_plan(const plansys2_msgs::msg::Plan & plan)
 
     std::cout << std::flush;
 
-    rclcpp::spin_some(this->get_node_base_interface());
     loop_rate.sleep();
   }
 
@@ -848,12 +844,12 @@ Terminal::execute_action(std::vector<std::string> & command)
   complete_action.pop_back();
 
   std::cerr << "<[" << complete_action << "]" << std::endl;
-  plansys2_msgs::msg::PlanItem action;
+  plansys2_msgs::PlanItem action;
   action.time = 0.0;
   action.action = complete_action;
   action.duration = 1.0;
 
-  plansys2_msgs::msg::Plan single_plan;
+  plansys2_msgs::Plan single_plan;
   single_plan.items.push_back(action);
 
   execute_plan(single_plan);
@@ -881,7 +877,7 @@ Terminal::process_run(std::vector<std::string> & command, std::ostringstream & o
       }
     } else if (command[0] == "plan-file") {
       if (command.size() == 2) {
-        std::optional<plansys2_msgs::msg::Plan> plan = parse_plan(command[1]);
+        std::optional<plansys2_msgs::Plan> plan = parse_plan(command[1]);
         if (!plan.has_value()) {
           os << "Plan could not be loaded " << std::endl;
           return;
@@ -906,44 +902,41 @@ Terminal::process_run(std::vector<std::string> & command, std::ostringstream & o
   }
 }
 
+void Terminal::status_callback(const plansys2_msgs::ActionPerformerStatus::ConstPtr & msg) {
+  actors_[msg->node_name] = *msg;
+}
+
 void
 Terminal::process_check_actors(std::vector<std::string> & command, std::ostringstream & os)
 {
-  std::map<std::string, plansys2_msgs::msg::ActionPerformerStatus> actors;
+  auto status_sub = std::make_shared<ros::Subscriber>( nh_.subscribe("/performers_status", 10,
+									       &Terminal::status_callback, this));
 
-  auto status_callback =
-    [this, &actors](const plansys2_msgs::msg::ActionPerformerStatus::SharedPtr msg) {
-      actors[msg->node_name] = *msg;
-    };
-
-  auto status_sub = create_subscription<plansys2_msgs::msg::ActionPerformerStatus>(
-    "/performers_status", rclcpp::QoS(100).reliable(), status_callback);
-
-  auto start = now();
-  while (rclcpp::ok() && (now() - start).seconds() < 2.0) {
-    rclcpp::spin_some(shared_from_this());
+  auto start = ros::Time::now();
+  while (ros::ok() && (ros::Time::now() - start).toSec() < 2.0) {
+    ros::spinOnce();
   }
 
   std::list<std::string> keys;
-  for (const auto & actor : actors) {
+  for (const auto & actor : actors_) {
     keys.push_back(actor.first);
   }
   keys.sort();
 
   for (const auto & key : keys) {
-    os << "\t[" << key << "] " << actors[key].action;
+    os << "\t[" << key << "] " << actors_[key].action;
 
-    switch (actors[key].state) {
-      case plansys2_msgs::msg::ActionPerformerStatus::NOT_READY:
+    switch (actors_[key].state) {
+      case plansys2_msgs::ActionPerformerStatus::NOT_READY:
         os << "\tNOT READY" << std::endl;
         break;
-      case plansys2_msgs::msg::ActionPerformerStatus::READY:
+      case plansys2_msgs::ActionPerformerStatus::READY:
         os << "\tREADY" << std::endl;
         break;
-      case plansys2_msgs::msg::ActionPerformerStatus::RUNNING:
+      case plansys2_msgs::ActionPerformerStatus::RUNNING:
         os << "\tRUNNING" << std::endl;
         break;
-      case plansys2_msgs::msg::ActionPerformerStatus::FAILURE:
+      case plansys2_msgs::ActionPerformerStatus::FAILURE:
         os << "\tFAILURE" << std::endl;
         break;
     }

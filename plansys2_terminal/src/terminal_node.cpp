@@ -15,17 +15,18 @@
 
 #include <memory>
 
-#include "rclcpp/rclcpp.hpp"
+#include <ros/ros.h>
 
 #include "plansys2_terminal/Terminal.hpp"
 
 int main(int argc, char ** argv)
 {
-  rclcpp::init(argc, argv);
+  ros::init(argc, argv, "plansys2_terminal_node");
+
   auto terminal_node = std::make_shared<plansys2_terminal::Terminal>();
 
   terminal_node->run_console();
 
-  rclcpp::shutdown();
+  ros::shutdown();
   return 0;
 }

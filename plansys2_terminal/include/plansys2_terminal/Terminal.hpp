@@ -20,13 +20,14 @@
 #include <memory>
 #include <sstream>
 
-#include "rclcpp/rclcpp.hpp"
+#include <ros/ros.h>
 
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_planner/PlannerClient.hpp"
 #include "plansys2_executor/ExecutorClient.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
+#include "plansys2_msgs/ActionPerformerStatus.h"
 
 namespace plansys2_terminal
 {
@@ -36,10 +37,10 @@ void pop_front(std::vector<std::string> & tokens);
 char * completion_generator(const char * text, int state);
 char ** completer(const char * text, int start, int end);
 
-std::optional<plansys2_msgs::msg::Plan>
+std::optional<plansys2_msgs::Plan>
 parse_plan(const std::string planfile);
 
-class Terminal : public rclcpp::Node
+class Terminal
 {
 public:
   Terminal();
@@ -81,7 +82,7 @@ protected:
     std::ostringstream & os);
   virtual void process_remove(std::vector<std::string> & command, std::ostringstream & os);
 
-  virtual void execute_plan(const plansys2_msgs::msg::Plan & plan);
+  virtual void execute_plan(const plansys2_msgs::Plan & plan);
   virtual void execute_plan(int items = -1);
   virtual void execute_action(std::vector<std::string> & command);
   virtual void process_run(std::vector<std::string> & command, std::ostringstream & os);
@@ -99,12 +100,17 @@ protected:
   virtual void process_help(std::vector<std::string> & command, std::ostringstream & os);
 
 private:
+  std::map<std::string, plansys2_msgs::ActionPerformerStatus> actors_;
+  void status_callback(const plansys2_msgs::ActionPerformerStatus::ConstPtr & msg);
+
   std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
   std::shared_ptr<plansys2::PlannerClient> planner_client_;
   std::shared_ptr<plansys2::ExecutorClient> executor_client_;
 
   std::string problem_file_name_;
+
+  ros::NodeHandle nh_;
 };
 
 }  // namespace plansys2_terminal
