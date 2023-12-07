@@ -22,7 +22,7 @@
 #include <memory>
 #include <chrono>
 
-#include <behaviortree_cpp_v3/utils/shared_library.h>
+#include <behaviortree_cpp/utils/shared_library.h>
 #include <plansys2_bt_actions/BTAction.hpp>
 
 namespace plansys2
@@ -123,7 +123,7 @@ bool BTAction::onActivate()
       ROS_INFO_STREAM(get_name() <<
         "Logging to file: " << filename_extension);
       bt_file_logger_ =
-        std::make_unique<BT::FileLogger>(tree_, filename_extension.c_str());
+        std::make_unique<BT::FileLogger2>(tree_, std::filesystem::path(filename_extension));
     }
 
     if (bml) {

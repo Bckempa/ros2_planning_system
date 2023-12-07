@@ -35,14 +35,10 @@
 
 #include <ros/package.h>
 
-#include <behaviortree_cpp_v3/behavior_tree.h>
-#include <behaviortree_cpp_v3/bt_factory.h>
-#include <behaviortree_cpp_v3/utils/shared_library.h>
-#include <behaviortree_cpp_v3/blackboard.h>
-
-#ifdef ZMQ_FOUND
-#include <behaviortree_cpp_v3/loggers/bt_zmq_publisher.h>
-#endif
+#include <behaviortree_cpp/behavior_tree.h>
+#include <behaviortree_cpp/bt_factory.h>
+#include <behaviortree_cpp/utils/shared_library.h>
+#include <behaviortree_cpp/blackboard.h>
 
 #include <plansys2_executor/behavior_tree/execute_action_node.hpp>
 #include <plansys2_executor/behavior_tree/wait_action_node.hpp>
@@ -482,7 +478,7 @@ void ExecutorNode::execute(plansys2_msgs::ExecutePlanGoalConstPtr _goal)
 
   while (status == BT::NodeStatus::RUNNING && !cancel_plan_requested_) {
     try {
-      status = tree.tickRoot();
+      status = tree.tickOnce();
     } catch (std::exception & e) {
       std::cerr << e.what() << std::endl;
       status == BT::NodeStatus::FAILURE;

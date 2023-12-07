@@ -21,7 +21,7 @@
 
 #include "geometry_msgs/msg/pose2_d.hpp"
 
-#include "behaviortree_cpp_v3/behavior_tree.h"
+#include "behaviortree_cpp/behavior_tree.h"
 
 namespace plansys2_bt_tests
 {
@@ -29,7 +29,7 @@ namespace plansys2_bt_tests
 Move::Move(
   const std::string & xml_tag_name,
   const std::string & action_name,
-  const BT::NodeConfiguration & conf)
+  const BT::NodeConfig & conf)
 : plansys2::BtActionNode<test_msgs::action::Fibonacci>(xml_tag_name, action_name, conf)
 {
   rclcpp::Node::SharedPtr node;
@@ -95,11 +95,11 @@ Move::on_success()
 
 }  // namespace plansys2_bt_tests
 
-#include "behaviortree_cpp_v3/bt_factory.h"
+#include "behaviortree_cpp/bt_factory.h"
 BT_REGISTER_NODES(factory)
 {
   BT::NodeBuilder builder =
-    [](const std::string & name, const BT::NodeConfiguration & config)
+    [](const std::string & name, const BT::NodeConfig & config)
     {
       return std::make_unique<plansys2_bt_tests::Move>(
         name, "move", config);

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-  <arg name="model_file" default="$(find plum_plan)/common/pddl/inspection_domain.pddl"/>
+  <arg name="model_file" default="$(find ros2_planning_system_examples)/common/inspection_domain.pddl"/>
   <arg name="namespace" default="" />
   <arg name="params_file" default="$(find plansys2_bringup)/params/plansys2_params.yaml" />
 

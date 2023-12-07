@@ -19,6 +19,8 @@
   <depend>plansys2_executor</depend>
   <depend>plansys2_lifecycle_manager</depend>
 
+  <depend>behaviortree_cpp</depend>
+
 <!--  <exec_depend>launch_ros</exec_depend>
 
   <test_depend>ament_lint_common</test_depend>

@@ -18,9 +18,9 @@
 #include <iostream>
 #include <fstream>
 
-#include "behaviortree_cpp_v3/behavior_tree.h"
-#include "behaviortree_cpp_v3/bt_factory.h"
-#include "behaviortree_cpp_v3/utils/shared_library.h"
+#include "behaviortree_cpp/behavior_tree.h"
+#include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp/utils/shared_library.h"
 
 #include "../behavior_tree/OpenGripper.hpp"
 #include "../behavior_tree/CloseGripper.hpp"
@@ -155,7 +155,7 @@ TEST(bt_actions, on_tick_failure)
     });
 
 
-  BT::NodeConfiguration config;
+  BT::NodeConfig config;
   BT::assignDefaultRemapping<plansys2_bt_tests::OnTickFail>(config);
   auto bb = BT::Blackboard::create();
   bb->set("node", node);
@@ -191,7 +191,7 @@ TEST(bt_actions, on_feedback_failure)
       while (!finished) {rclcpp::spin_some(move_server_node);}
     });
 
-  BT::NodeConfiguration config;
+  BT::NodeConfig config;
   BT::assignDefaultRemapping<plansys2_bt_tests::OnFeedbackFail>(config);
   auto bb = BT::Blackboard::create();
   bb->set("node", node);

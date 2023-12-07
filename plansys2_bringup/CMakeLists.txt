@@ -11,6 +11,7 @@ set(dependencies
     plansys2_planner
     plansys2_executor
     plansys2_lifecycle_manager
+    behaviortree_cpp
 )
 
 find_package(catkin REQUIRED COMPONENTS
@@ -30,10 +31,10 @@ include_directories(
 )
   
 
-add_executable(plansys2_node
-  src/plansys2_node.cpp
-)
-target_link_libraries(plansys2_node ${catkin_LIBRARIES})
+#add_executable(plansys2_node
+#  src/plansys2_node.cpp
+#)
+#target_link_libraries(plansys2_node ${catkin_LIBRARIES})
 #target_compile_definitions(plansys2_node PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 
 #if(BUILD_TESTING)
@@ -48,7 +49,7 @@ endforeach(dir)
 
 
 install(TARGETS
-  plansys2_node
+#  plansys2_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

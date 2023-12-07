@@ -22,7 +22,7 @@
 #include <plansys2_msgs/ActionExecution.h>
 #include <plansys2_msgs/ActionExecutionInfo.h>
 #include <plansys2_msgs/DurativeAction.h>
-#include <behaviortree_cpp_v3/behavior_tree.h>
+#include <behaviortree_cpp/behavior_tree.h>
 
 #include <ros/ros.h>
 #include <lifecycle/managed_node.h>

@@ -2,7 +2,7 @@
 <launch>
 
   <!-- arguments -->
-  <arg name="model_file" default="$(find plum_plan)/common/inspection_domain.pddl"/>
+  <arg name="model_file" default="$(find ros2_planning_system_examples)/common/inspection_domain.pddl"/>
   <arg name="namespace" default="" />
   <arg name="params_file" default="$(find plansys2_bringup)/params/plansys2_params.yaml" />
   <arg name="action_bt_file" default="$(find plansys2_executor)/behavior_trees/plansys2_action_bt.xml" />

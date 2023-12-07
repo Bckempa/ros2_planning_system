@@ -20,7 +20,7 @@ set(dependencies
  #   rclcpp_action
     lifecycle
     plansys2_executor
-    behaviortree_cpp_v3
+    behaviortree_cpp
 #    action_msgs
     lifecycle_msgs
 )

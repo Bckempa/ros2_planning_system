@@ -18,7 +18,7 @@
 #include <memory>
 #include <string>
 
-#include <behaviortree_cpp_v3/action_node.h>
+#include <behaviortree_cpp/action_node.h>
 #include <ros/ros.h>
 #include <ros/lifecycle/managed_node.h>
 //#include "rclcpp_action/rclcpp_action.hpp"
@@ -35,7 +35,7 @@ public:
   BtActionNode(
     const std::string & xml_tag_name,
     const std::string & action_name,
-    const BT::NodeConfiguration & conf)
+    const BT::NodeConfig & conf)
   : BT::ActionNodeBase(xml_tag_name, conf), action_name_(action_name)
   {
     node_ = config().blackboard->get<std::shared_ptr<NodeT> >("node");

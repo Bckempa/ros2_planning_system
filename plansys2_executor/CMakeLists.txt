@@ -19,7 +19,7 @@ set(dependencies
     plansys2_problem_expert
     plansys2_planner
     pluginlib
-    behaviortree_cpp_v3
+    behaviortree_cpp
     std_msgs
 )
 
