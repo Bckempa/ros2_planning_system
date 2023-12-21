@@ -20,7 +20,7 @@ set(DEPS
 )
 
 
-find_package(catkin REQUIRED COMPONENTS
+find_package(catkin2 REQUIRED COMPONENTS
   ${DEPS}
 )  
 

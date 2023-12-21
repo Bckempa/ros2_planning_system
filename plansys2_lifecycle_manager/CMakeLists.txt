@@ -11,7 +11,7 @@ set(dependencies
     lifecycle_msgs
 )
 
-find_package(catkin REQUIRED COMPONENTS
+find_package(catkin2 REQUIRED COMPONENTS
   ${dependencies}
 )  
 
@@ -21,6 +21,10 @@ catkin_package(
   CATKIN_DEPENDS ${dependencies}
   DEPENDS
 )
+
+###########
+## Build ##
+###########
 
 include_directories(
   include
@@ -36,6 +40,10 @@ target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
 add_executable(lifecycle_manager_node  src/lifecycle_manager_node.cpp)
 target_link_libraries(lifecycle_manager_node ${PROJECT_NAME} ${catkin_LIBRARIES})
+
+#############
+## Install ##
+#############
 
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}

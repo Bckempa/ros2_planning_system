@@ -7,7 +7,7 @@ set(MSG_DEPS
   actionlib_msgs
   )
 
-find_package(catkin REQUIRED COMPONENTS
+find_package(catkin2 REQUIRED COMPONENTS
   message_generation
   ${MSG_DEPS}
 )
@@ -71,4 +71,13 @@ catkin_package(
   LIBRARIES
   CATKIN_DEPENDS message_runtime ${MSG_DEPS}
   DEPENDS
+)
+
+#############
+## Install ##
+#############
+
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
 )
