@@ -71,12 +71,14 @@ POPFPlanSolver::getPlan(const std::string & domain,
   problem_out.close();
 
 
-  std::string popf_bin = ros::package::getPath("plansys2_popf_plan_solver") + ("/common/bin/popf");
   std::string extra_params;
   lc_node_->getBaseNode().getParam(parameter_name_, extra_params);
 
+  std::string popf_bin;
+  lc_node_->getBaseNode().param<std::string>("popf_bin", popf_bin, "rosrun popf popf");
+
   int status = system(
-    (popf_bin +
+    (popf_bin + " " +
       extra_params +
     " /tmp/" + node_namespace + "/domain.pddl /tmp/" + node_namespace +
     "/problem.pddl > /tmp/" + node_namespace + "/plan").c_str());
@@ -156,7 +158,8 @@ POPFPlanSolver::is_valid_domain(
      
   problem_out.close();
 
-  std::string popf_bin = ros::package::getPath("plansys2_popf_plan_solver") + ("/common/bin/popf");
+  std::string popf_bin;
+  lc_node_->getBaseNode().param<std::string>("popf_bin", popf_bin, "rosrun popf popf");
 
   std::string command_line = std::string(popf_bin + " " + temp_dir.string() + "/check_domain.pddl " + temp_dir.string() +
     "/check_problem.pddl > " + temp_dir.string() + "/check.out");
