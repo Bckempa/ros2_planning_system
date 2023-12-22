@@ -74,8 +74,8 @@ POPFPlanSolver::getPlan(const std::string & domain,
   std::string extra_params;
   lc_node_->getBaseNode().getParam(parameter_name_, extra_params);
 
-  std::string popf_bin;
-  lc_node_->getBaseNode().param<std::string>("popf_bin", popf_bin, "rosrun popf popf");
+  std::string popf_bin = "rosrun popf popf";
+  // lc_node_->getBaseNode().param<std::string>("popf_bin", popf_bin, "rosrun popf popf");
 
   int status = system(
     (popf_bin + " " +
@@ -149,17 +149,11 @@ POPFPlanSolver::is_valid_domain(
   domain_out.close();
 
   std::ofstream problem_out(temp_dir.string() + "/check_problem.pddl");
-
-  problem_out << "(define (problem void) (:domain plansys2) \n";
-  problem_out << "(:objects ) \n";
-  problem_out << "(:init ) \n";
-  problem_out << "(:goal ) \n"; 
-  problem_out << ") \n"; 
-     
+  problem_out << "(define (problem void) (:domain plansys2))\n";
   problem_out.close();
 
-  std::string popf_bin;
-  lc_node_->getBaseNode().param<std::string>("popf_bin", popf_bin, "rosrun popf popf");
+  std::string popf_bin = "rosrun popf popf";
+  // lc_node_->getBaseNode().param<std::string>("popf_bin", popf_bin, "rosrun popf popf");
 
   std::string command_line = std::string(popf_bin + " " + temp_dir.string() + "/check_domain.pddl " + temp_dir.string() +
     "/check_problem.pddl > " + temp_dir.string() + "/check.out");
