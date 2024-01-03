@@ -33,7 +33,7 @@ else()
   message(WARNING "ZeroMQ NOT found. Not including PublisherZMQ.")
 endif()
 
-find_package(catkin REQUIRED COMPONENTS
+find_package(catkin2 REQUIRED COMPONENTS
   ${dependencies}
 )  
 

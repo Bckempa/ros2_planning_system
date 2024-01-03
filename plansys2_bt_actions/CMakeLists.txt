@@ -25,7 +25,7 @@ set(dependencies
     lifecycle_msgs
 )
 
-find_package(catkin REQUIRED COMPONENTS
+find_package(catkin2 REQUIRED COMPONENTS
   ${dependencies}
 )  
 
