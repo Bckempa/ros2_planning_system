@@ -15,7 +15,7 @@ set(DEPS
   lifecycle_msgs
 )
 
-find_package(catkin REQUIRED COMPONENTS
+find_package(catkin2 REQUIRED COMPONENTS
   ${DEPS}
 )  
 
@@ -25,6 +25,10 @@ catkin_package(
   CATKIN_DEPENDS ${DEPS}
   DEPENDS
 )
+
+###########
+## Build ##
+###########
 
 include_directories(
   include
@@ -46,10 +50,17 @@ add_executable(problem_expert_node
 )
 target_link_libraries(problem_expert_node ${PROJECT_NAME})
 
-foreach( dir config launch)
-   install( DIRECTORY ${dir}/
-         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/${dir} )
-endforeach(dir)
+#############
+## Install ##
+#############
+
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" 
+)
+
+install( DIRECTORY launch/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch )
 
 install(TARGETS
   ${PROJECT_NAME}

@@ -14,7 +14,7 @@ set(DEPS
     plansys2_pddl_parser
 )
 
-find_package(catkin REQUIRED COMPONENTS
+find_package(catkin2 REQUIRED COMPONENTS
   ${DEPS}
 )
 
@@ -36,7 +36,7 @@ target_compile_definitions(terminal PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 
 add_executable(${PROJECT_NAME}
   src/terminal_node.cpp)
-target_link_libraries(${PROJECT_NAME} terminal readline ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} terminal readline ncurses ${catkin_LIBRARIES})
 
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}

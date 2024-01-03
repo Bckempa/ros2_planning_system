@@ -13,7 +13,7 @@ set(DEPS
   plansys2_msgs
 )
 
-find_package(catkin REQUIRED COMPONENTS
+find_package(catkin2 REQUIRED COMPONENTS
   ${DEPS}
 )  
 
@@ -24,6 +24,10 @@ catkin_package(
   CATKIN_DEPENDS ${DEPS}
   DEPENDS
 )
+
+###########
+## Build ##
+###########
 
 include_directories(
   include
@@ -38,9 +42,13 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNC
 
 #pluginlib_export_plugin_description_file(plansys2_core plansys2_popf_plan_solver_plugin.xml)
 
+#############
+## Install ##
+#############
+
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  FILES_MATCHING PATTERN "*.h" 
+  FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
 )
 
 install(FILES plansys2_popf_plan_solver_plugin.xml
