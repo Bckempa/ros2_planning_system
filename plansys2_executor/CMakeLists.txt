@@ -95,6 +95,11 @@ foreach( dir launch behavior_trees)
          DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/${dir} )
 endforeach(dir)
 
+# Required plugin descriptor file for nodelet
+install(FILES plugins.xml
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+
 install(TARGETS
   ${PROJECT_NAME}
   bt_builder_plugins
