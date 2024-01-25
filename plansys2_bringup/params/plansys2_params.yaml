@@ -1,6 +1,8 @@
 planner:
 
-    plan_solver_plugins: ["POPF"]
+    plan_solver_plugins: ["OPTIC"]
+    OPTIC:
+      plugin: "plansys2/OPTICPlanSolver"
     POPF:
       plugin: "plansys2/POPFPlanSolver"
     TFD:
