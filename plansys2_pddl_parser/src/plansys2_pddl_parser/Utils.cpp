@@ -178,6 +178,14 @@ std::tuple<uint8_t, int> getExpr(const std::string & input)
     }
   }
 
+  // since minus can be inside predicates, it must precede any alphanumeric
+  // characters to be subtraction
+  if (std::regex_search(input, match, std::regex("[a-zA-Z0-9_]"))) {
+    if (static_cast<int>(match.position()) < first) {
+      first = static_cast<int>(match.position());
+    }
+  }
+
   if (std::regex_search(input, match, std::regex("\\-"))) {
     if (static_cast<int>(match.position()) < first) {
       first = static_cast<int>(match.position());
