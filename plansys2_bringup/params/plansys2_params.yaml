@@ -1,11 +1,6 @@
 planner:
 
-    plan_solver_plugins: ["TREY"]
-    OPTIC:
-      plugin: "plansys2/OPTICPlanSolver"
-    TREY:
-      plugin: "plansys2/OPTICPlanSolver"
-      command: "rosrun survey_planner plan_survey"
+    plan_solver_plugins: ["POPF"]
     POPF:
       plugin: "plansys2/POPFPlanSolver"
     TFD:
