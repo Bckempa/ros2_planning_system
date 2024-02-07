@@ -602,8 +602,8 @@ SimpleBTBuilder::get_flow_tree(
     ret = ret + execution_block(node, l + 1);
 
     ret = ret + t(l + 1) +
-      "<Parallel success_threshold=\"" + std::to_string(node->out_arcs.size()) +
-      "\" failure_threshold=\"1\">\n";
+      "<Parallel success_count=\"" + std::to_string(node->out_arcs.size()) +
+      "\" failure_count=\"1\">\n";
 
     for (const auto & child_node : node->out_arcs) {
       ret = ret + get_flow_tree(child_node, used_nodes, l + 2);
