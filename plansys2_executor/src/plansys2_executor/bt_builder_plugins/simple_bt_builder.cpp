@@ -125,16 +125,37 @@ SimpleBTBuilder::get_node_contradict(
   }
 
   // Get the state prior to applying the effects
-  auto predicates = node->predicates;
-  auto functions = node->functions;
+  //auto predicates = node->predicates;
+  //auto functions = node->functions;
 
-  // Are all of the requirements satisfied?
-  if (is_action_executable(current->action, predicates, functions)) {
-    // Apply the effects
-    apply(current->action.action->at_start_effects, predicates, functions);
+  //const std::string i1 = "(" + parser::pddl::nameActionsToString(current->action.action) + ")";
+  //const std::string i2 = "(" + parser::pddl::nameActionsToString(node->action.action) + ")";
+  //printf("check1 contradict %s %s\n", i1.c_str(), i2.c_str());
+  //bool added = false;
+  //// Are all of the requirements satisfied?
+  //if (is_action_executable(current->action, predicates, functions)) {
+  //  // Apply the effects
+  //  apply(current->action.action->at_start_effects, predicates, functions);
 
-    // Look for a contradiction
-    if (!is_action_executable(node->action, predicates, functions)) {
+  //  printf("check2 contradict %s %s\n", i1.c_str(), i2.c_str());
+  //  // Look for a contradiction
+  //  if (!is_action_executable(node->action, predicates, functions)) {
+  //    contradictions.push_back(node);
+  //    added = true;
+  //  }
+  //}
+
+  // the previous algorithm assumes that the plan executes on time. it misses conflicts
+  // when a parallel action finishes early or late. This simple check
+  // will have many false positives for potential conflicts but that's probably good enough for our case
+  std::vector<plansys2::Predicate> p1 = node->predicates;
+  std::vector<plansys2::Function> f1 = node->functions;
+  // see if possible to execute both actions simultaneously
+  apply(current->action.action->at_start_requirements, p1, f1);
+  apply(current->action.action->over_all_requirements, p1, f1);
+  if (is_action_executable(node->action, p1, f1) && is_action_executable(current->action, p1, f1)) {
+    apply(current->action.action->at_start_effects, p1, f1);
+    if (!is_action_executable(node->action, p1, f1)) {
       contradictions.push_back(node);
     }
   }
