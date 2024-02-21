@@ -63,12 +63,14 @@ void ActionExecutor::action_hub_callback(const plansys2_msgs::ActionExecution::C
     case plansys2_msgs::ActionExecution::RESPONSE:
       if (msg->arguments == action_params_ && msg->action == action_name_) {
         if (state_ == DEALING) {
-          confirm_performer(msg->node_id);
           current_performer_id_ = msg->node_id;
           state_ = RUNNING;
+          if (waiting_timer_ != nullptr)
+            waiting_timer_->stop();
           waiting_timer_ = nullptr;
           start_execution_ = ros::Time::now();
           state_time_ = ros::Time::now();
+          confirm_performer(msg->node_id);
         } else {
           reject_performer(msg->node_id);
         }
@@ -273,8 +275,15 @@ ActionExecutor::get_params(const std::string & action_expr)
 void
 ActionExecutor::wait_timeout(const ros::WallTimerEvent &event)
 {
-  ROS_WARN("%s -- No action performer for %s. retrying", getName().c_str(), action_.c_str());
-  request_for_performers();
+  if (state_ == RUNNING) {
+    ROS_WARN_STREAM("This timer wasn't properly cancelled");
+    if (waiting_timer_!= nullptr) {
+      waiting_timer_->stop();
+    }
+  } else {
+    ROS_WARN("%s -- No action performer for %s. retrying", getName().c_str(), action_.c_str());
+    request_for_performers();
+  }
 }
 
 }  // namespace plansys2
