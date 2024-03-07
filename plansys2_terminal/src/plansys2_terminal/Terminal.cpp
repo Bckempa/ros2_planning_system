@@ -1092,6 +1092,9 @@ Terminal::process_help(std::vector<std::string> & command, std::ostringstream & 
   std::ostringstream cmd_source;
   cmd_source << "\t source <file_name> [0|1]" << std::endl;
 
+  std::ostringstream cmd_save;
+  cmd_save << "\t save <robot> <location> [<robot> <location> ...]" << std::endl;
+
   std::ostringstream cmd_help;
   cmd_help << "\t help|? [ set | get | remove | run | check |" <<
     " source | save| quit | help | ? ]" << std::endl;
@@ -1103,7 +1106,7 @@ Terminal::process_help(std::vector<std::string> & command, std::ostringstream & 
   cmds.insert(std::pair<std::string, std::string>("run", cmd_run.str()));
   cmds.insert(std::pair<std::string, std::string>("check", cmd_run.str()));
   cmds.insert(std::pair<std::string, std::string>("source", cmd_source.str()));
-  cmds.insert(std::pair<std::string, std::string>("save", cmd_run.str()));
+  cmds.insert(std::pair<std::string, std::string>("save", cmd_save.str()));
   cmds.insert(std::pair<std::string, std::string>("quit", std::string("")));
   cmds.insert(std::pair<std::string, std::string>("help", cmd_help.str()));
   cmds.insert(std::pair<std::string, std::string>("?", cmd_help.str()));
