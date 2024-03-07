@@ -97,6 +97,8 @@ protected:
 
   virtual void process_source(std::vector<std::string> & command, std::ostringstream & os);
 
+  virtual void process_save(std::vector<std::string> & command, const std::string & filename);
+
   virtual void process_help(std::vector<std::string> & command, std::ostringstream & os);
 
 private:
