@@ -961,7 +961,7 @@ Terminal::process_check(std::vector<std::string> & command, std::ostringstream &
 void
 Terminal::process_save(std::vector<std::string> & command, const std::string & filename)
 {
-  if (command.empty()) {
+  if (!command.size() >= 2) {
     std::cerr << "No location command the format is <robot> <location> (...)" << std::endl;
     return;
   }
@@ -1008,13 +1008,13 @@ Terminal::process_save(std::vector<std::string> & command, const std::string & f
   }
 
   // Save predicates
-  char prefix[5], robot[10], location[10];
+  char prefix[5], robot[10], location[15];
   int bay_min = 99, bay_max = 1;
   auto predicates = problem_client_->getPredicates();
   for (const auto & predicate : predicates) {
     int bay;
     int number;
-    if (sscanf(parser::pddl::toString(predicate).c_str(),"(location-available %[^_]_bay%d)", prefix, &bay)) {
+    if (sscanf(parser::pddl::toString(predicate).c_str(),"(location-available %4[^_]_bay%d)", prefix, &bay)) {
       if (bay_max < bay) bay_max = bay;
       if (bay_min > bay) bay_min = bay;
 
@@ -1022,7 +1022,7 @@ Terminal::process_save(std::vector<std::string> & command, const std::string & f
       // berths set already
       continue;
 
-    } else if (sscanf(parser::pddl::toString(predicate).c_str(),"(robot-at %s %s)", robot, location)) {
+    } else if (sscanf(parser::pddl::toString(predicate).c_str(),"(robot-at %9s %14s)", robot, location)) {
       std::cerr << "It thinks robot " << robot << " is in (" << location << std::endl;
 
     } else {
