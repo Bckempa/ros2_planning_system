@@ -988,6 +988,7 @@ Terminal::process_save(std::vector<std::string> & command, const std::string & f
   std::vector<std::string> robots, robot_bays;
   std::vector<bool> berths(2, true); // Initialize with two berths available
   while (command.size() >= 2) {
+    std::cerr << "Adding: " << command[0] << " in:" << command[1] << std::endl;
 
     // Check if location is berth
     int berth;
@@ -999,6 +1000,9 @@ Terminal::process_save(std::vector<std::string> & command, const std::string & f
       robot_bays.push_back(command[1]);
     }
     command.erase(command.begin(), command.begin() + 2);
+  }
+  if (command.size() == 1) {
+    std::cerr << "Ignoring input: " << command[0] << std::endl;
   }
 
   for (int i = 0; i < berths.size(); ++i) {
