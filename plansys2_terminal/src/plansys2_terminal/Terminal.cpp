@@ -985,12 +985,14 @@ Terminal::process_save(std::vector<std::string> & command, const std::string & f
   auto goal = problem_client_->getGoal();
   ofs << "set goal " << parser::pddl::toString(goal) << std::endl;
 
+  // Save berth predicates location
   std::vector<std::string> robots, robot_bays;
   std::vector<bool> berths(2, true); // Initialize with two berths available
   while (command.size() >= 2) {
     std::cerr << "Adding: " << command[0] << " in:" << command[1] << std::endl;
 
-    // Check if location is berth
+    // Check if location is berth, if so add the predicate right away
+    // If not save the robot + bay number to be added later
     int berth;
     if (sscanf(command[1].c_str(),"berth%d)",&berth)) {
       ofs << "(robot-at " << command[0] << " " << "berth" << berth << ")" << std::endl;
@@ -1005,6 +1007,7 @@ Terminal::process_save(std::vector<std::string> & command, const std::string & f
     std::cerr << "Ignoring input: " << command[0] << std::endl;
   }
 
+  // If robot not in berth, add location free predicate
   for (int i = 0; i < berths.size(); ++i) {
     if (berths[i]) {
       ofs << "set predicate (location-available " << "berth" << i + 1 << ")" << std::endl;
@@ -1033,7 +1036,7 @@ Terminal::process_save(std::vector<std::string> & command, const std::string & f
       ofs << "set predicate " << parser::pddl::toString(predicate) << std::endl;
     }
   }
-  // print available locations
+  // print available locations and add robot locations
   if (bay_min < bay_max) {
     for (int i = bay_min; i <= bay_max; ++i) {
         for (int j = 0; j < robot_bays.size(); ++j) {
