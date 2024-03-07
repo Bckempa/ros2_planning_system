@@ -959,6 +959,108 @@ Terminal::process_check(std::vector<std::string> & command, std::ostringstream &
 }
 
 void
+Terminal::process_save(std::vector<std::string> & command, const std::string & filename)
+{
+  if (command.empty()) {
+    std::cerr << "No location command the format is <robot> <location> (...)" << std::endl;
+    return;
+  }
+
+  std::ofstream ofs(filename);
+  if (!ofs.is_open()) {
+    std::cerr << "Error opening file: " << filename << std::endl;
+    return;
+  }
+
+  // Save instances
+  auto instances = problem_client_->getInstances();
+  for (const auto & instance : instances) {
+    ofs << "set instance " << instance.name << " " << instance.type << std::endl;
+    if (instance.type == "robot") {
+      ofs << "set predicate (robot-available " << instance.name << ")" << std::endl;
+    }
+  }
+
+  // Save goal
+  auto goal = problem_client_->getGoal();
+  ofs << "set goal " << parser::pddl::toString(goal) << std::endl;
+
+  std::vector<std::string> robots, robot_bays;
+  std::vector<bool> berths(2, true); // Initialize with two berths available
+  while (command.size() >= 2) {
+
+    // Check if location is berth
+    int berth;
+    if (sscanf(command[1].c_str(),"berth%d)",&berth)) {
+      ofs << "(robot-at " << command[0] << " " << "berth" << berth << ")" << std::endl;
+      berths[berth - 1] = false;
+    } else {
+      robots.push_back(command[0]);
+      robot_bays.push_back(command[1]);
+    }
+    command.erase(command.begin(), command.begin() + 2);
+  }
+
+  for (int i = 0; i < berths.size(); ++i) {
+    if (berths[i]) {
+      ofs << "set predicate (location-available " << "berth" << i + 1 << ")" << std::endl;
+    }
+  }
+
+  // Save predicates
+  char prefix[5], robot[10], location[10];
+  int bay_min = 99, bay_max = 1;
+  auto predicates = problem_client_->getPredicates();
+  for (const auto & predicate : predicates) {
+    int bay;
+    int number;
+    if (sscanf(parser::pddl::toString(predicate).c_str(),"(location-available %[^_]_bay%d)", prefix, &bay)) {
+      if (bay_max < bay) bay_max = bay;
+      if (bay_min > bay) bay_min = bay;
+
+    } else if (sscanf(parser::pddl::toString(predicate).c_str(),"(location-available berth%d)", &bay)) {
+      // berths set already
+      continue;
+
+    } else if (sscanf(parser::pddl::toString(predicate).c_str(),"(robot-at %s %s)", robot, location)) {
+      std::cerr << "It thinks robot " << robot << " is in (" << location << std::endl;
+
+    } else {
+      ofs << "set predicate " << parser::pddl::toString(predicate) << std::endl;
+    }
+  }
+  // print available locations
+  if (bay_min < bay_max) {
+    for (int i = bay_min; i <= bay_max; ++i) {
+        for (int j = 0; j < robot_bays.size(); ++j) {
+          if (std::stoi(robot_bays[j]) == i) {
+            ofs << "set predicate (robot-at " << robots[j] << " " << prefix << "_bay" << robot_bays[j] << ")" << std::endl;
+            continue;
+          }
+        }
+        ofs << "set predicate (location-available " << prefix << "_bay" << i << ")" << std::endl;
+    }
+  } else {
+    std::cerr << "Bay min higher than bay max";
+  }
+
+  // Save functions
+  auto functions = problem_client_->getFunctions();
+  for (const auto & function : functions) {
+    std::string function_name = parser::pddl::toString(function);
+    int number = -1;
+    // Find the number in the itemName
+    size_t pos = function_name.find_first_of("0123456789");
+    if (pos != std::string::npos) {
+        number = std::stoi(function_name.substr(pos));
+    }
+    ofs << "set function (= " << function_name << " " << number << ")" << std::endl;
+  }
+
+  ofs.close();
+}
+
+void
 Terminal::process_help(std::vector<std::string> & command, std::ostringstream & os)
 {
   std::ostringstream cmd_set;
@@ -992,7 +1094,7 @@ Terminal::process_help(std::vector<std::string> & command, std::ostringstream & 
 
   std::ostringstream cmd_help;
   cmd_help << "\t help|? [ set | get | remove | run | check |" <<
-    " source | quit | help | ? ]" << std::endl;
+    " source | save| quit | help | ? ]" << std::endl;
 
   std::map<std::string, std::string> cmds;
   cmds.insert(std::pair<std::string, std::string>("set", cmd_set.str()));
@@ -1001,6 +1103,7 @@ Terminal::process_help(std::vector<std::string> & command, std::ostringstream & 
   cmds.insert(std::pair<std::string, std::string>("run", cmd_run.str()));
   cmds.insert(std::pair<std::string, std::string>("check", cmd_run.str()));
   cmds.insert(std::pair<std::string, std::string>("source", cmd_source.str()));
+  cmds.insert(std::pair<std::string, std::string>("save", cmd_run.str()));
   cmds.insert(std::pair<std::string, std::string>("quit", std::string("")));
   cmds.insert(std::pair<std::string, std::string>("help", cmd_help.str()));
   cmds.insert(std::pair<std::string, std::string>("?", cmd_help.str()));
@@ -1101,6 +1204,9 @@ Terminal::process_command(std::string & command, std::ostringstream & os, bool i
       os << "Nested \"source\" commands not allowed" << std::endl;
     }
     finish_parsing = true;
+  } else if (tokens[0] == "save") {
+    pop_front(tokens);
+    process_save(tokens, "/tmp/planner/saved.ps2.pddl");
   } else if (tokens[0] == "quit") {
     finish_parsing = true;
   } else {
