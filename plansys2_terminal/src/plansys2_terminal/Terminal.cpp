@@ -1021,7 +1021,9 @@ Terminal::process_save(std::vector<std::string> & command, const std::string & f
   for (const auto & predicate : predicates) {
     int bay;
     int number;
-    if (sscanf(parser::pddl::toString(predicate).c_str(),"(location-available %4[^_]_bay%d)", prefix, &bay)) {
+
+    int items_read = sscanf(parser::pddl::toString(predicate).c_str(), "(location-available %4[^_]_bay%d)", prefix, &bay);
+    if (items_read == 2) {
       if (bay_max < bay) bay_max = bay;
       if (bay_min > bay) bay_min = bay;
 
