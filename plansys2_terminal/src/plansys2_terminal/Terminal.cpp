@@ -987,7 +987,7 @@ Terminal::process_save(std::vector<std::string> & command, const std::string & f
 
   // Save berth predicates location
   std::vector<std::string> robots, robot_bays;
-  std::vector<bool> berths(2, true); // Initialize with two berths available
+  std::vector<std::string> berths(2, "none"); // Initialize with two berths available
   while (command.size() >= 2) {
     std::cerr << "Adding: " << command[0] << " in:" << command[1] << std::endl;
 
@@ -995,8 +995,7 @@ Terminal::process_save(std::vector<std::string> & command, const std::string & f
     // If not save the robot + bay number to be added later
     int berth;
     if (sscanf(command[1].c_str(),"berth%d)",&berth)) {
-      ofs << "(robot-at " << command[0] << " " << "berth" << berth << ")" << std::endl;
-      berths[berth - 1] = false;
+      berths[berth - 1] = command[0];
     } else {
       robots.push_back(command[0]);
       robot_bays.push_back(command[1]);
@@ -1007,21 +1006,17 @@ Terminal::process_save(std::vector<std::string> & command, const std::string & f
     std::cerr << "Ignoring input: " << command[0] << std::endl;
   }
 
-  // If robot not in berth, add location free predicate
-  for (int i = 0; i < berths.size(); ++i) {
-    if (berths[i]) {
-      ofs << "set predicate (location-available " << "berth" << i + 1 << ")" << std::endl;
-    }
-  }
-
   // Save predicates
-  char prefix[5], robot[10], location[15];
+  char prefix[5], prefix_read[5], robot[10], location[15];
   int bay_min = 99, bay_max = 1;
   auto predicates = problem_client_->getPredicates();
   for (const auto & predicate : predicates) {
     int bay;
     int number;
-    if (sscanf(parser::pddl::toString(predicate).c_str(),"(location-available %4[^_]_bay%d)", prefix, &bay)) {
+
+    int items_read = sscanf(parser::pddl::toString(predicate).c_str(), "(location-available %4[^_]_bay%d)", prefix_read, &bay);
+    if (items_read == 2) {
+      strncpy(prefix, prefix_read, 5);
       if (bay_max < bay) bay_max = bay;
       if (bay_min > bay) bay_min = bay;
 
@@ -1049,6 +1044,25 @@ Terminal::process_save(std::vector<std::string> & command, const std::string & f
     }
   } else {
     std::cerr << "Bay min higher than bay max";
+  }
+
+  // If robot not in berth, add location free predicate
+  for (int i = 0; i < berths.size(); ++i) {
+    if (strcmp(prefix, "gra") == 0) {
+      ofs << "set predicate (location-available " << "berth" << i + 1 << "_g)" << std::endl;
+    }
+    else {
+      ofs << "set predicate (location-available " << "berth" << i + 1 << ")" << std::endl;
+    }
+
+    if (berths[i] != "none") {
+      if (strcmp(prefix, "gra") == 0) {
+        ofs << "set predicate (robot-at " << berths[i] << " " << "berth" << i + 1  << "_g)" << std::endl;
+      }
+      else {
+        ofs << "set predicate (robot-at " << berths[i] << " " << "berth" << i + 1 << ")" << std::endl;
+      }
+    }
   }
 
   // Save functions
