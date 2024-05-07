@@ -1041,7 +1041,6 @@ Terminal::process_save(std::vector<std::string> & command, const std::string & f
     if (range.first < range.second) {
       for (int bay = range.first; bay <= range.second; ++bay) {
         for (int j = 0; j < robot_bays.size(); ++j) {
-          std::cerr << robot_bays[j] << " is equal? " << prefix + "_bay" + std::to_string(bay) << std::endl;
           if (robot_bays[j] == prefix + "_bay" + std::to_string(bay)) {
             ofs << "set predicate (robot-at " << robots[j] << " " << robot_bays[j] << ")" << std::endl;
             continue;
