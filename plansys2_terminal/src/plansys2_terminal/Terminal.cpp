@@ -1007,8 +1007,8 @@ Terminal::process_save(std::vector<std::string> & command, const std::string & f
   }
 
   // Save predicates
-  char prefix[5], prefix_read[5], robot[10], location[15];
-  int bay_min = 99, bay_max = 1;
+  char prefix_read[5], robot[10], location[15];
+  std::map<std::string, std::pair<int, int>> prefix_bay_map;
   auto predicates = problem_client_->getPredicates();
   for (const auto & predicate : predicates) {
     int bay;
@@ -1016,9 +1016,13 @@ Terminal::process_save(std::vector<std::string> & command, const std::string & f
 
     int items_read = sscanf(parser::pddl::toString(predicate).c_str(), "(location-available %4[^_]_bay%d)", prefix_read, &bay);
     if (items_read == 2) {
-      strncpy(prefix, prefix_read, 5);
-      if (bay_max < bay) bay_max = bay;
-      if (bay_min > bay) bay_min = bay;
+      std::string prefix_str(prefix_read);
+      if (prefix_bay_map.find(prefix_str) == prefix_bay_map.end()) {
+        prefix_bay_map[prefix_str] = std::make_pair(99, 1); // Initialize with starting min and max values
+      }
+      auto& range = prefix_bay_map[prefix_str];
+      if (range.second < bay) range.second = bay;
+      if (range.first > bay) range.first = bay;
 
     } else if (sscanf(parser::pddl::toString(predicate).c_str(),"(location-available berth%d)", &bay)) {
       // berths set already
@@ -1031,24 +1035,27 @@ Terminal::process_save(std::vector<std::string> & command, const std::string & f
       ofs << "set predicate " << parser::pddl::toString(predicate) << std::endl;
     }
   }
-  // print available locations and add robot locations
-  if (bay_min < bay_max) {
-    for (int i = bay_min; i <= bay_max; ++i) {
+
+  // Print the predicates for available locations and add robot locations
+  for (const auto& [prefix, range] : prefix_bay_map) {
+    if (range.first < range.second) {
+      for (int bay = range.first; bay <= range.second; ++bay) {
         for (int j = 0; j < robot_bays.size(); ++j) {
-          if (std::stoi(robot_bays[j]) == i) {
-            ofs << "set predicate (robot-at " << robots[j] << " " << prefix << "_bay" << robot_bays[j] << ")" << std::endl;
+          if (robot_bays[j] == prefix + "_bay" + std::to_string(bay)) {
+            ofs << "set predicate (robot-at " << robots[j] << " " << robot_bays[j] << ")" << std::endl;
             continue;
           }
         }
-        ofs << "set predicate (location-available " << prefix << "_bay" << i << ")" << std::endl;
+        ofs << "set predicate (location-available " << prefix << "_bay" << bay << ")" << std::endl;
+      }
+    } else {
+      std::cerr << "Bay min higher than bay max for prefix " << prefix << std::endl;
     }
-  } else {
-    std::cerr << "Bay min higher than bay max";
   }
 
   // If robot not in berth, add location free predicate
   for (int i = 0; i < berths.size(); ++i) {
-    if (strcmp(prefix, "gra") == 0) {
+    if (prefix_bay_map.find("gra") != prefix_bay_map.end()) {
       ofs << "set predicate (location-available " << "berth" << i + 1 << "_g)" << std::endl;
     }
     else {
@@ -1056,7 +1063,7 @@ Terminal::process_save(std::vector<std::string> & command, const std::string & f
     }
 
     if (berths[i] != "none") {
-      if (strcmp(prefix, "gra") == 0) {
+      if (prefix_bay_map.find("gra") != prefix_bay_map.end()) {
         ofs << "set predicate (robot-at " << berths[i] << " " << "berth" << i + 1  << "_g)" << std::endl;
       }
       else {
